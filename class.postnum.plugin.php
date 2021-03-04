@@ -9,91 +9,92 @@ Contact Vanilla Forums Inc. at support [at] vanillaforums [dot] com
 */
 
 // Define the plugin:
-$PluginInfo['PostNum'] = array(
-   'Name' => 'PostNum',
-   'Description' => "This plugin allows users to see the ID number for each comment.",
-   'Version' => '.1',
+$PluginInfo['PostNumber'] = array(
+   'Name' => 'Post Number',
+   'Description' => "This plugin allows users to see the number alongside each comment.",
+   'Version' => '1.0',
+   'Icon' => 'postnumber.png',
    'MobileFriendly' => TRUE,
-   'RequiredApplications' => array('Vanilla' => '2.0.18'),
+   'RequiredApplications' => array('Vanilla' => '3.3'),
    'RequiredTheme' => FALSE, 
    'RequiredPlugins' => FALSE,
    'HasLocale' => TRUE,
    'RegisterPermissions' => FALSE,
-   'Author' => "HBF",
-   'AuthorEmail' => 'sales@imperialcraftbrewery.com',
-   'AuthorUrl' => 'http://www.homebrewforums.net'
+   'Author' => "HBF/SiCo",
+   'AuthorEmail' => 'vanilla@sico.co.uk',
+   'AuthorUrl' => ''
 );
 
-class PostNumPlugin extends Gdn_Plugin {
+class PostNumberPlugin extends Gdn_Plugin {
    
-   public function __construct() {
-      parent::__construct();
-      
-      if (function_exists('ValidateUsernameRegex'))
-         $this->ValidateUsernameRegex = ValidateUsernameRegex();
-      else
-         $this->ValidateUsernameRegex = "[\d\w_]{3,20}";
-      
-      
+   public function __construct()
+   {
+       parent::__construct();
+
+       if (function_exists('ValidateUsernameRegex')){
+           $this->ValidateUsernameRegex = ValidateUsernameRegex();
+       } else {
+           $this->ValidateUsernameRegex = "[\d\w_]{3,20}";
+       }
    }
 
-   public function PluginController_PostNum_Create($Sender) {
+   public function PluginController_PostNum_Create($Sender)
+   {
 		$this->Dispatch($Sender, $Sender->RequestArgs);
    }
    
-   public function DiscussionController_CommentOptions_Handler($Sender) {
+   public function DiscussionController_CommentOptions_Handler($Sender)
+   {
       $this->AddPostNum($Sender);
    }
    
-   public function PostController_CommentOptions_Handler($Sender) {
+   public function PostController_CommentOptions_Handler($Sender)
+   {
       $this->AddPostNum($Sender);
    }
-   
-   protected function AddPostNum($Sender) {
-      if (!Gdn::Session()->UserID) return;
-       
-	  // Figure what comment postiion this is for the discussion
 
-       $Offset = !isset($Sender->EventArguments['Comment']) ? 
-	   1 : $Sender->CommentModel->GetOffset($Sender->EventArguments['Comment']) + 2;  
+    /**
+     * @param $Sender
+     */
+   protected function AddPostNum($Sender)
+   {
+        if (!Gdn::Session()->UserID) return;
+
+        // Figure what comment position this is for the discussion
+        $Offset = !isset($Sender->EventArguments['Comment']) ?
+        1 : $Sender->CommentModel->GetOffset($Sender->EventArguments['Comment']) + 2;
 	   
-      if(get_class($Sender) == 'DiscussionController')
-	  {
-		  //if we are being called by the discussion controller we can grab the total cout for the discussion like this.
-		  $Object = $Sender->Data['Discussion'];
-	  	  $Total = $Object->CountComments;
-          $postID = 'Post '.$Offset.' of '.$Total;
-	  }
-	  else
-	  {
-		  //we have to access the discussion count differently from the post controller. also requires a one post offset on total.
-		  $Object = $Sender->Discussion;
-	  	  $Total = $Object->CountComments + 1 ;
-          $postID = 'Post '.$Offset.' of '.$Total;
-		  //$postID = 'Post '.$Offset;
-	  }
-      echo <<<POSTNUM
-      <span class="PostNum"><a href=''>$postID</a></span>
-POSTNUM;
+        if(get_class($Sender) == 'DiscussionController') {
+            // If we are being called by the discussion controller we can grab the total cout for the discussion like this.
+            $Object = $Sender->Data['Discussion'];
+            $Total = $Object->CountComments;
+            $postID = 'Post ' . $Offset . ' of ' . $Total;
+        } else {
+            // We have to access the discussion count differently from the post controller. also requires a one post offset on total.
+            $Object = $Sender->Discussion;
+            $Total = $Object->CountComments + 1 ;
+            $postID = 'Post ' . $Offset . ' of ' . $Total;
+        }
+
+        // Setup correct url from https://open.vanillaforums.com/discussion/24153/postnum-with-link
+        isset($Sender->EventArguments['Comment']) ?
+            $postURL = '/discussion/comment/' . $Sender->EventArguments['Comment']->CommentID . '#Comment_' . $Sender->EventArguments['Comment']->CommentID:
+            $postURL = 'p1';
+
+      echo '<span class="PostNum"><a href="' . $postURL . '" title="' . $postID . '">#' . $Offset . '</a></span>';
 	  
    }
 
-   
-   public function DiscussionController_BeforeCommentDisplay_Handler($Sender) {
-    
-   }
+   public function DiscussionController_BeforeCommentDisplay_Handler($Sender)
+   {}
    
  
-   public function Setup() {
-	   
-   }
+   public function Setup()
+   {}
    
-   public function OnDisable() {
-	   
-   }
+   public function OnDisable()
+   {}
    
-   public function Structure() {
-      // Nothing to do here!
-   }
-         
+   public function Structure()
+   {}
 }
