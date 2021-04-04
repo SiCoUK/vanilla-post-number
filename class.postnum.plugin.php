@@ -12,7 +12,7 @@ Contact Vanilla Forums Inc. at support [at] vanillaforums [dot] com
 $PluginInfo['PostNumber'] = array(
    'Name' => 'Post Number',
    'Description' => "This plugin allows users to see the number alongside each comment.",
-   'Version' => '1.0',
+   'Version' => '1.1',
    'Icon' => 'postnumber.png',
    'MobileFriendly' => TRUE,
    'RequiredApplications' => array('Vanilla' => '3.3'),
@@ -63,16 +63,16 @@ class PostNumberPlugin extends Gdn_Plugin {
         // Figure what comment position this is for the discussion
         $Offset = !isset($Sender->EventArguments['Comment']) ?
         1 : $Sender->CommentModel->GetOffset($Sender->EventArguments['Comment']) + 2;
-	   
+
         if(get_class($Sender) == 'DiscussionController') {
-            // If we are being called by the discussion controller we can grab the total cout for the discussion like this.
+            // If we are being called by the discussion controller we can grab the total count for the discussion like this.
             $Object = $Sender->Data['Discussion'];
-            $Total = $Object->CountComments;
+            $Total = $Object->CountComments + 1;
             $postID = 'Post ' . $Offset . ' of ' . $Total;
         } else {
             // We have to access the discussion count differently from the post controller. also requires a one post offset on total.
             $Object = $Sender->Discussion;
-            $Total = $Object->CountComments + 1 ;
+            $Total = $Object->CountComments + 1;
             $postID = 'Post ' . $Offset . ' of ' . $Total;
         }
 
